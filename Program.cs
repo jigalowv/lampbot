@@ -1,17 +1,29 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using lampbot.CommandHandlers;
 using lampbot.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+var builder = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
+var configuration = builder.Build();
+
 var services = new ServiceCollection()
+    .AddSingleton<IConfiguration>(configuration)
     .AddDbContext<DataContext>(options =>
     {
-        options.UseSqlite("Data source=lamp.db");
+        options.UseSqlite(configuration.GetConnectionString("DefaultConnection"));
     })
     .AddSingleton(new DiscordSocketConfig()
     {
-        GatewayIntents = Discord.GatewayIntents.All
+        GatewayIntents = GatewayIntents.Guilds |
+                         GatewayIntents.GuildMessages |
+                         GatewayIntents.DirectMessages
     })
     .AddSingleton<DiscordSocketClient>()
     .AddSingleton<ICommandHandler, SlashCommandHandler>()
