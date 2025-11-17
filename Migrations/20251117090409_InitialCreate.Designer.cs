@@ -10,7 +10,7 @@ using lampbot.Data;
 namespace lampbot.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20251116130902_InitialCreate")]
+    [Migration("20251117090409_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

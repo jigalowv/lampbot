@@ -6,17 +6,18 @@ namespace lampbot.Data
 {
     public class DataContextFactory : IDesignTimeDbContextFactory<DataContext>
     {
-        private readonly IConfiguration _configuration;
-        
-        public DataContextFactory(IConfiguration configuration)
-        {
-            _configuration = configuration;   
-        }
-
         public DataContext CreateDbContext(string[] args)
         {
+            var config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false)
+                .AddEnvironmentVariables()
+                .Build();
+
+            var connectionString = config.GetConnectionString("DefaultConnection");
+
             var builder = new DbContextOptionsBuilder<DataContext>();
-            builder.UseSqlite(_configuration.GetConnectionString("DefaultConnection"));
+            builder.UseSqlite(connectionString);
 
             return new DataContext(builder.Options);
         }
