@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using lampbot.CommandHandlers;
 using lampbot.Data;
+using lampbot.SlashCommands;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,8 @@ var services = new ServiceCollection()
     })
     .AddSingleton<DiscordSocketClient>()
     .AddSingleton<ICommandHandler, SlashCommandHandler>()
+    .AddSingleton<FunCommandList>()
+    .AddSingleton<UserCommandList>()
     .BuildServiceProvider();
 
 await services.GetRequiredService<ICommandHandler>().InitAsync();
