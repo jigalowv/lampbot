@@ -54,6 +54,23 @@ namespace lampbot.SlashCommands
                             .WithDescription("user to remove.")
                             .WithType(ApplicationCommandOptionType.User)
                             .WithRequired(true)))
+                    .AddOption(new SlashCommandOptionBuilder()
+                        .WithName("update-role")
+                        .WithDescription("updates the user's role.")
+                        .WithType(ApplicationCommandOptionType.SubCommand)
+                        .AddOption(new SlashCommandOptionBuilder()
+                            .WithName("user")
+                            .WithDescription("user to update.")
+                            .WithType(ApplicationCommandOptionType.User)
+                            .WithRequired(true))
+                        .AddOption(new SlashCommandOptionBuilder()
+                            .WithName("role")
+                            .WithDescription("new role.")
+                            .WithType(ApplicationCommandOptionType.Integer)
+                            .WithRequired(true)
+                            .AddChoice("куратор", (long)Role.Curator)
+                            .AddChoice("ведущий", (long)Role.Lead)
+                            .AddChoice("участник", (long)Role.User)))
                 .Build());
         }
 
@@ -77,6 +94,12 @@ namespace lampbot.SlashCommands
                         command: command,
                         userToRemove: (SocketUser)sub.Options.First().Value);
                         break;
+                case "update-role":
+                    await UpdateRoleAsync(
+                        command: command,
+                        userToUpdate: (SocketUser)sub.Options.First().Value,
+                        role: (Role)(long)sub.Options.ElementAt(1).Value);
+                    break;
                 default:
                     break;
             }
@@ -157,6 +180,28 @@ namespace lampbot.SlashCommands
                 .Build();
             
             await command.RespondAsync(ephemeral: true, embed: embed);
+        }
+
+        private async Task UpdateRoleAsync(SocketSlashCommand command, SocketUser userToUpdate, Role role)
+        {
+            var executor = await _context.Users.FindAsync(command.User.Id);
+            var user = await _context.Users.FindAsync(userToUpdate.Id);
+
+            if (user is null)
+            {
+                await command.RespondAsync("the user does not exist.", ephemeral: true);
+                return;
+            }
+
+            if (executor is null || executor.Role <= user.Role || executor.Role <= role)
+            {
+                await command.RespondAsync("you have no access.", ephemeral: true);
+                return;
+            }
+
+            user.Role = role;
+            await _context.SaveChangesAsync();
+            await command.RespondAsync("the user's role has been updated.", ephemeral: true);
         }
     }
 }
