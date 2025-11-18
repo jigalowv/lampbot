@@ -491,3 +491,5 @@ lamp.db-wal
 lamp.db-shm
 
 .vscode/
+
+Migrations/

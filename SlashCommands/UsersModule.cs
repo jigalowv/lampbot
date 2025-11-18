@@ -13,26 +13,6 @@ namespace lampbot.SlashCommands
             : base(context)
         { }
 
-        private async Task<bool> EnsureUserExistsAsync(User? user)
-        {
-            if (user is null)
-            {
-                await RespondAsync("the user does not exist.", ephemeral: true);
-                return false;
-            }
-            return true;
-        }
-
-        private async Task<bool> EnsureExecutorHasAccessAsync(User? executor, Role targetRole)
-        {
-            if (executor is null || executor.Role <= targetRole)
-            {
-                await RespondAsync("you have no access.", ephemeral: true);
-                return false;
-            }
-            return true;
-        }
-
         [SlashCommand("add", "adds a user to the database.")]
         public async Task AddAsync(
             [Summary("user", "user to add.")] SocketUser user,
