@@ -10,5 +10,6 @@ namespace lampbot.Data
         { }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<EventType> EventTypes { get; set; }
     }
 }
