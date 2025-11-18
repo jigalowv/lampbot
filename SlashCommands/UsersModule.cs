@@ -7,20 +7,11 @@ using lampbot.Entities;
 namespace lampbot.SlashCommands
 {
     [Group("users", "basic users' operations.")]
-    public class UsersModule : InteractionModuleBase<SocketInteractionContext>
+    public class UsersModule : ModuleBase
     {
-        private readonly DataContext _context;
-
         public UsersModule(DataContext context)
-        {
-            _context = context;
-        }
-
-        private Task<User?> GetExecutorAsync()
-            => _context.Users.FindAsync(Context.User.Id).AsTask();
-
-        private Task<User?> FindUserAsync(ulong id)
-            => _context.Users.FindAsync(id).AsTask();
+            : base(context)
+        { }
 
         private async Task<bool> EnsureUserExistsAsync(User? user)
         {
