@@ -36,9 +36,7 @@ namespace lampbot.SlashCommands
                             .WithRequired(true)
                             .AddChoice("куратор", (long)Role.Curator)
                             .AddChoice("ведущий", (long)Role.Lead)
-                            .AddChoice("участник", (long)Role.User)
-                        )
-                    )
+                            .AddChoice("участник", (long)Role.User)))
                     .AddOption(new SlashCommandOptionBuilder()
                         .WithName("show")
                         .WithDescription("show a database user.")
@@ -47,6 +45,15 @@ namespace lampbot.SlashCommands
                             .WithName("user")
                             .WithDescription("user to show.")
                             .WithType(ApplicationCommandOptionType.User)))
+                    .AddOption(new SlashCommandOptionBuilder()
+                        .WithName("remove")
+                        .WithDescription("remove a user from the database.")
+                        .WithType(ApplicationCommandOptionType.SubCommand)
+                        .AddOption(new SlashCommandOptionBuilder()
+                            .WithName("user")
+                            .WithDescription("user to remove.")
+                            .WithType(ApplicationCommandOptionType.User)
+                            .WithRequired(true)))
                 .Build());
         }
 
@@ -65,6 +72,11 @@ namespace lampbot.SlashCommands
                         command: command,
                         userToShow: (SocketUser?)sub.Options.FirstOrDefault()?.Value);
                     break;
+                case "remove":
+                    await RemoveAsync(
+                        command: command,
+                        userToRemove: (SocketUser)sub.Options.First().Value);
+                        break;
                 default:
                     break;
             }
@@ -89,7 +101,7 @@ namespace lampbot.SlashCommands
 
             if (await _context.Users.FindAsync(userToAdd.Id) is not null)
             {
-                await command.RespondAsync("user already exists.", ephemeral: true);
+                await command.RespondAsync("the user already exists.", ephemeral: true);
                 return;
             }
 
@@ -101,7 +113,29 @@ namespace lampbot.SlashCommands
             });
 
             await _context.SaveChangesAsync();
-            await command.RespondAsync("user added.", ephemeral: true);
+            await command.RespondAsync("the user has been added.", ephemeral: true);
+        }
+
+        private async Task RemoveAsync(SocketSlashCommand command, SocketUser userToRemove)
+        {
+            var executor = await _context.Users.FindAsync(command.User.Id);
+            var user = await _context.Users.FindAsync(userToRemove.Id);
+
+            if (user is null)
+            {
+                await command.RespondAsync("the user does not exist.", ephemeral: true);
+                return;
+            }
+
+            if (executor is null || executor.Role <= user.Role)
+            {
+                await command.RespondAsync("you have no access.", ephemeral: true);
+                return;
+            }
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+            await command.RespondAsync("the user has been successfully removed.");
         }
 
         private async Task ShowAsync(SocketSlashCommand command, SocketUser? userToShow)
@@ -112,7 +146,7 @@ namespace lampbot.SlashCommands
 
             if (user is null)
             {
-                await command.RespondAsync("user does not exist.", ephemeral: true);
+                await command.RespondAsync("the user does not exist.", ephemeral: true);
                 return;
             }
 

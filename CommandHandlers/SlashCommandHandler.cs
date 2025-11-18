@@ -46,7 +46,9 @@ namespace lampbot.CommandHandlers
                 await guild.DeleteApplicationCommandsAsync();
 
                 await _funCommandList.InitAsync(guild);
+                System.Console.WriteLine("fun commands have been initialized");
                 await _userCommandList.InitAsync(guild);
+                System.Console.WriteLine("users' commands have been initialized");
 
                 Console.WriteLine("bot is running");
             };
