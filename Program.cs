@@ -1,8 +1,8 @@
 ﻿using Discord;
+using Discord.Interactions;
 using Discord.WebSocket;
-using lampbot.CommandHandlers;
+using lampbot;
 using lampbot.Data;
-using lampbot.SlashCommands;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,11 +27,14 @@ var services = new ServiceCollection()
                          GatewayIntents.DirectMessages
     })
     .AddSingleton<DiscordSocketClient>()
-    .AddSingleton<ICommandHandler, SlashCommandHandler>()
-    .AddSingleton<FunCommandList>()
-    .AddSingleton<UserCommandList>()
+    .AddSingleton(sp =>
+    {
+        var client = sp.GetRequiredService<DiscordSocketClient>();
+        return new InteractionService(client.Rest);
+    })
+    .AddSingleton<InteractionHandler>()
     .BuildServiceProvider();
 
-await services.GetRequiredService<ICommandHandler>().InitAsync();
+await services.GetRequiredService<InteractionHandler>().InitAsync();
 
 await Task.Delay(-1);
