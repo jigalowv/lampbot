@@ -46,7 +46,7 @@ namespace lampbot.SlashCommands
             var executor = await GetExecutorAsync();
             var dbUser = await FindUserAsync(user.Id);
 
-            if (!await EnsureUserExistsAsync(dbUser))
+            if (!await EnsureObjectExistsAsync(dbUser, nameof(user)))
                 return;
 
             if (!await EnsureExecutorHasAccessAsync(executor, dbUser!.Role))
@@ -63,7 +63,7 @@ namespace lampbot.SlashCommands
             var id = user?.Id ?? Context.User.Id;
             var dbUser = await FindUserAsync(id);
 
-            if (!await EnsureUserExistsAsync(dbUser))
+            if (!await EnsureObjectExistsAsync(dbUser, nameof(user)))
                 return;
 
             var embed = new EmbedBuilder()
@@ -75,7 +75,7 @@ namespace lampbot.SlashCommands
             await RespondAsync(ephemeral: true, embed: embed);
         }
 
-        [SlashCommand("update-role", "update the user's role.")]
+        [SlashCommand("set-role", "update the user's role.")]
         public async Task UpdateRoleAsync(
             [Summary("user", "user to update.")] SocketUser user,
             [Summary("role", "user's new role.")] Role role)
@@ -83,7 +83,7 @@ namespace lampbot.SlashCommands
             var executor = await GetExecutorAsync();
             var dbUser = await FindUserAsync(user.Id);
 
-            if (!await EnsureUserExistsAsync(dbUser))
+            if (!await EnsureObjectExistsAsync(dbUser, nameof(user)))
                 return;
 
             if (executor is null ||

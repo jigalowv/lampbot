@@ -5,7 +5,7 @@ using lampbot.Entities;
 
 namespace lampbot.SlashCommands
 {
-    [Group("event-types", "basic event-types' operations.")]
+    [Group("types", "basic event types' operations.")]
     public class EventTypeModule : ModuleBase
     {
         public EventTypeModule(DataContext context)
@@ -15,9 +15,7 @@ namespace lampbot.SlashCommands
         [SlashCommand("add", "adds new event type.")]
         public async Task AddAsync([Summary("name", "event type's name")]string name)
         {
-            var executor = await GetExecutorAsync();
-            
-            if (!await EnsureExecutorHasAccessAsync(executor, Role.Lead))
+            if (!await EnsureExecutorHasAccessAsync(await GetExecutorAsync(), Role.Lead))
                 return;
 
             name = name.ToLower();
@@ -40,22 +38,15 @@ namespace lampbot.SlashCommands
         [SlashCommand("remove", "removes the event type.")]
         public async Task RemoveAsync([Summary("name", "event type's name")]string name)
         {
-            var executor = await GetExecutorAsync();
-            
-            if (!await EnsureExecutorHasAccessAsync(executor, Role.Lead))
+            if (!await EnsureExecutorHasAccessAsync(await GetExecutorAsync(), Role.Lead))
                 return;
 
-            var eventType = _context.EventTypes
-                .Where(et => et.Name == name.ToLower())
-                .FirstOrDefault();
+            var eventType = await FindEventType(name);
 
-            if (eventType is null)
-            {
-                await RespondAsync($"'{name}' does not exist.", ephemeral: true);
+            if (!await EnsureObjectExistsAsync(eventType, "event_type")) 
                 return;
-            }
 
-            _context.EventTypes.Remove(eventType);
+            _context.EventTypes.Remove(eventType!);
             await _context.SaveChangesAsync();
             await RespondAsync($"'{eventType}' removed successfully", ephemeral: true);
         }
