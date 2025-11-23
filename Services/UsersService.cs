@@ -1,5 +1,6 @@
 using lampbot.Data;
 using lampbot.Entities;
+using lampbot.Extensions;
 using Microsoft.Extensions.Configuration;
 
 namespace lampbot.Services
@@ -14,58 +15,48 @@ namespace lampbot.Services
 
         public async Task<string> RemoveAsync(
             ulong executorId, 
-            ulong userId,
-            bool saveChanges = true)
+            ulong userId)
         {
             var executor = await _context.Users.FindAsync(executorId);
             
             if (executor is null)
-                return GetUsersMessage(Constants.NotFound, executorId);
+                return _config.GetResponse(Constants.NotFound, nameof(User), $"<@{executorId}>");
             
             var user = await _context.Users.FindAsync(userId);
 
             if (user is null)
-                return GetUsersMessage(Constants.NotFound, userId);
+                return _config.GetResponse(Constants.NotFound, nameof(User), $"<@{userId}>");
             
             if (executor.Role <= user.Role)
-                return GetUsersMessage(Constants.NoAccess, userId);
+                return _config.GetResponse(Constants.NoAccess, nameof(User), $"<@{userId}>");
 
             _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
 
-            if (saveChanges)
-            {
-                await _context.SaveChangesAsync();
-            }
-
-            return GetUsersMessage(Constants.Remove, userId);
+            return _config.GetResponse(Constants.Remove, nameof(User), $"<@{userId}>");
         }
 
         public async Task<string> AddAsync(
             ulong executorId, 
-            User user,
-            bool saveChanges = true)
+            User user)
         {
             var executor = await _context.Users.FindAsync(executorId);
             
             if (executor is null)
-                return GetUsersMessage(Constants.NotFound, executorId);
+                return _config.GetResponse(Constants.NotFound, nameof(User), $"<@{executorId}>");
             
             var dbUser = await _context.Users.FindAsync(user.Id);
 
             if (dbUser is null)
-                return GetUsersMessage(Constants.AlreadyExists, user.Id);
+                return _config.GetResponse(Constants.AlreadyExists, nameof(User), $"<@{user.Id}>");
 
             if (executor.Role <= user.Role)
-                return GetUsersMessage(Constants.NoAccess, user.Id);
+                return _config.GetResponse(Constants.NoAccess, nameof(User), $"<@{user.Id}>");
 
             await _context.Users.AddAsync(user);
-
-            if (saveChanges)
-            {
-                await _context.SaveChangesAsync();
-            }
-
-            return GetUsersMessage(Constants.NoAccess, user.Id);
+            await _context.SaveChangesAsync();
+            
+            return _config.GetResponse(Constants.NoAccess, nameof(User), $"<@{user.Id}>");
         }
 
         public async Task<string> ShowAsync(ulong userId)
@@ -73,7 +64,7 @@ namespace lampbot.Services
             var user = await _context.Users.FindAsync(userId);
 
             if (user is null)
-                return GetUsersMessage(Constants.NotFound, userId);
+                return _config.GetResponse(Constants.NotFound, nameof(User), $"<@{userId}>");
             
             return 
             $"""
@@ -91,27 +82,21 @@ namespace lampbot.Services
             var executor = await _context.Users.FindAsync(executorId);
             
             if (executor is null)
-                return GetUsersMessage(Constants.NotFound, executorId);
+                return _config.GetResponse(Constants.NotFound, nameof(User), $"<@{executorId}>");
             
             var user = await _context.Users.FindAsync(userId);
 
             if (user is null)
-                return GetUsersMessage(Constants.NotFound, userId);
+                return _config.GetResponse(Constants.NotFound, nameof(User), $"<@{userId}>");
 
             if (executor.Role <= user.Role ||
                 executor.Role <= newRole)
-                return GetUsersMessage(Constants.NoAccess, user.Id);
+                return _config.GetResponse(Constants.NoAccess, nameof(User), $"<@{user.Id}>");
 
             user.Role = newRole;
             await _context.SaveChangesAsync();
-            return GetUsersMessage(Constants.Update, user.Id);
-        }
 
-        private string GetUsersMessage(string field, object arg)
-        {
-            return string.Format(
-                format: GetMessageSection("Users")[field]!, 
-                arg0: arg);
+            return _config.GetResponse(Constants.Update, nameof(User), $"<@{user.Id}>");
         }
     }
 }
