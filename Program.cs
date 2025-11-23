@@ -3,6 +3,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using lampbot;
 using lampbot.Data;
+using lampbot.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,6 +33,9 @@ var services = new ServiceCollection()
         var client = sp.GetRequiredService<DiscordSocketClient>();
         return new InteractionService(client.Rest);
     })
+    .AddSingleton<UsersService>()
+    .AddSingleton<EventTypeService>()
+    .AddSingleton<EventService>()
     .AddSingleton<InteractionHandler>()
     .BuildServiceProvider();
 
