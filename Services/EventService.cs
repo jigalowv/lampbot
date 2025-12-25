@@ -86,7 +86,8 @@ namespace lampbot.Services
         public async Task<string> RemoveAsync(
             ulong executorId,
             string startDateStr,
-            string name)
+            string name
+        )
         {
             var executor = await _context.Users.FindAsync(executorId);
             

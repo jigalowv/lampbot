@@ -1,3 +1,4 @@
+using Discord;
 using lampbot.Data;
 using lampbot.Entities;
 using lampbot.Extensions;
@@ -66,12 +67,7 @@ namespace lampbot.Services
             if (user is null)
                 return _config.GetResponse(Constants.NotFound, nameof(User), $"<@{userId}>");
             
-            return 
-            $"""
-                <@{user.Id}>
-                - role: {user.Role}
-                - id: {user.Id}
-            """;
+            return $"<@{user.Id}> ({user.Role})";
         }
 
         public async Task<string> SetRole(
@@ -83,7 +79,6 @@ namespace lampbot.Services
             
             if (executor is null)
                 return _config.GetResponse(Constants.NotFound, nameof(User), $"<@{executorId}>");
-            
             var user = await _context.Users.FindAsync(userId);
 
             if (user is null)

@@ -74,14 +74,16 @@ namespace lampbot.Services
         public string ShowAsync()
         {
             var sb = new StringBuilder()
-                .AppendLine("Event types:");
+                .AppendLine("Event types:```");
 
             foreach (var eventType in _context.EventTypes)
             {
                 sb.AppendLine()
-                    .Append("- ")
+                    .Append("+ ")
                     .Append(eventType.Name);
             }
+
+            sb.AppendLine("```");
 
             return sb.ToString();
         }
